@@ -228,7 +228,7 @@ def anonymize_data(input_file, k_anonymity, population_size=10, max_iter=500, k_
         k_share=k_share
     )
 
-    min_iter = 1 
+    min_iter = 20 
     num_iterations = max_iter // k_share  
     for i in range(num_iterations):
         apo_aro.iterate()
