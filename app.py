@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import bcrypt
 from werkzeug.utils import secure_filename
-from train_dynamic import anonymize_data  # Giả sử bạn đã có hàm này
+from train_dynamic import anonymize_data 
 from datetime import datetime
 
 app = Flask(__name__)
@@ -13,32 +13,27 @@ app.config['ANONYMIZED_FOLDER'] = 'results'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 os.makedirs(app.config['ANONYMIZED_FOLDER'], exist_ok=True)
 
-# Đường dẫn đến file users.csv
 USERS_FILE = 'data/users.csv'
 
-# Đảm bảo thư mục data tồn tại
 os.makedirs('data', exist_ok=True)
 
-# Khởi tạo file users.csv nếu chưa tồn tại
 if not os.path.exists(USERS_FILE):
     pd.DataFrame(columns=["username", "hashed_password", "role", "theme"]).to_csv(USERS_FILE, index=False)
 
-# Hàm đọc dữ liệu người dùng từ file users.csv
 def load_users():
     if os.path.exists(USERS_FILE):
         df = pd.read_csv(USERS_FILE)
         users = {}
         for _, row in df.iterrows():
             users[row['username']] = {
-                'password': row['hashed_password'].encode('utf-8'),  # Mật khẩu đã mã hóa
+                'password': row['hashed_password'].encode('utf-8'), 
                 'role': row['role'],
                 'theme': row['theme'],
-                'history': []  # Lịch sử ẩn danh được lưu tạm trong session
+                'history': []  
             }
         return users
     return {}
 
-# Hàm lưu dữ liệu người dùng vào file users.csv
 def save_users(users):
     data = []
     for username, info in users.items():
@@ -51,15 +46,12 @@ def save_users(users):
     df = pd.DataFrame(data)
     df.to_csv(USERS_FILE, index=False)
 
-# Tải dữ liệu người dùng
 users = load_users()
 
-# Định nghĩa bộ lọc basename cho Jinja2
 @app.template_filter('basename')
 def basename_filter(path):
     return os.path.basename(path) if path else ''
 
-# Route cho trang chính sách sử dụng
 @app.route('/policy', methods=['GET', 'POST'])
 def policy():
     if request.method == 'POST':
@@ -81,7 +73,6 @@ def register():
         if username in users:
             flash('Tên người dùng đã tồn tại!', 'danger')
             return redirect(url_for('register'))
-        # Mã hóa mật khẩu
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
         users[username] = {
             'password': hashed_password,
@@ -89,7 +80,7 @@ def register():
             'theme': 'light',
             'history': []
         }
-        save_users(users)  # Lưu vào file users.csv
+        save_users(users)  
         flash('Đăng ký thành công! Vui lòng đăng nhập.', 'success')
         return redirect(url_for('login'))
     return render_template('register.html', theme=session.get('theme', 'light'))
@@ -98,29 +89,25 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # Trường hợp đăng nhập với tư cách khách
         if 'guest_login' in request.form:
             session['role'] = 'guest'
-            session['theme'] = 'light'  # Giao diện mặc định cho khách
+            session['theme'] = 'light'  
             flash('Bạn đã đăng nhập với tư cách khách!', 'success')
             return redirect(url_for('policy'))
 
-        # Trường hợp đăng nhập thông thường
         username = request.form.get('username')
         password = request.form.get('password')
 
-        # Kiểm tra nếu username hoặc password trống
         if not username or not password:
             flash('Vui lòng nhập đầy đủ tên người dùng và mật khẩu!', 'danger')
             return redirect(url_for('login'))
 
-        # Kiểm tra thông tin đăng nhập
         if username in users and bcrypt.checkpw(password.encode('utf-8'), users[username]['password']):
             session['username'] = username
             session['role'] = users[username]['role']
             session['theme'] = users[username]['theme']
             flash('Đăng nhập thành công!', 'success')
-            return redirect(url_for('policy'))  # Chuyển hướng đến trang chính sách
+            return redirect(url_for('policy')) 
         else:
             flash('Tên người dùng hoặc mật khẩu không đúng!', 'danger')
 
@@ -129,10 +116,9 @@ def login():
 # Route cho trang chủ
 @app.route('/')
 def index():
-    # Cho phép khách truy cập trang chủ
     if 'policy_agreed' not in session or not session['policy_agreed']:
         return redirect(url_for('policy'))
-    role = session.get('role', 'guest')  # Nếu không đăng nhập, mặc định là khách
+    role = session.get('role', 'guest') 
     return render_template('index.html', role=role, theme=session.get('theme', 'light'))
 
 # Route cho trang hồ sơ
@@ -160,7 +146,6 @@ def user_profile():
 # Route cho trang ẩn danh
 @app.route('/anonymize', methods=['GET', 'POST'])
 def anonymize():
-    # Cho phép khách truy cập trang ẩn danh
     if 'policy_agreed' not in session or not session['policy_agreed']:
         return redirect(url_for('policy'))
     role = session.get('role', 'guest')
@@ -176,7 +161,7 @@ def anonymize():
                 session.pop('anonymized_file', None)
                 session.pop('results', None)
                 session.pop('preview_data', None)
-                session.pop('original_filename', None)  # Xóa tên file gốc
+                session.pop('original_filename', None) 
                 flash('Đã hủy ẩn danh thành công!', 'success')
             return redirect(url_for('anonymize'))
 
@@ -186,7 +171,7 @@ def anonymize():
             session.pop('anonymized_file', None)
             session.pop('results', None)
             session.pop('preview_data', None)
-            session.pop('original_filename', None)  # Xóa tên file gốc
+            session.pop('original_filename', None) 
             flash('Đã reset trang thành công! Vui lòng chọn file mới.', 'success')
             return redirect(url_for('anonymize'))
 
@@ -199,20 +184,16 @@ def anonymize():
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
 
-            # Lưu tên file gốc vào session
             session['original_filename'] = filename
 
             try:
                 anon_output_file, results = anonymize_data(filepath, int(k_value), target_column=target_column)
                 session['anonymized_file'] = anon_output_file
                 session['results'] = results
-
-                # Đọc 5 dòng đầu tiên của file ẩn danh để xem trước
                 df = pd.read_csv(anon_output_file, delimiter=';', nrows=5)
                 preview_data = [df.columns.tolist()] + df.values.tolist()
                 session['preview_data'] = preview_data
 
-                # Lưu lịch sử ẩn danh chỉ cho người dùng đã đăng nhập
                 if 'username' in session:
                     users[session['username']]['history'].append({
                         'date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -226,7 +207,6 @@ def anonymize():
 
     return render_template('anonymize.html', theme=session.get('theme', 'light'), results=session.get('results'), preview_data=session.get('preview_data'))
 
-# Route để tải file ẩn danh
 @app.route('/download_anonymized_file')
 def download_anonymized_file():
     if 'anonymized_file' not in session:
@@ -234,7 +214,6 @@ def download_anonymized_file():
         return redirect(url_for('anonymize'))
     return send_file(session['anonymized_file'], as_attachment=True)
 
-# Route để đăng xuất
 @app.route('/logout')
 def logout():
     session.clear()

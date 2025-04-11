@@ -1,0 +1,5 @@
+username,anonymized_info,date
+vy,"File: italia.csv, k=2, IL=0.6201, Best Fitness=0.6201, Target=disease",2025-04-09
+vy,"File: italia.csv, k=2, IL=0.5556, Best Fitness=0.6472, Target=disease",2025-04-09
+vy,"File: mgm.csv, k=3, IL=0.3000, Best Fitness=0.3136, Target=severity",2025-04-09
+vy,"File: mgm.csv, k=2, IL=0.2500, Best Fitness=0.2936, Target=severity",2025-04-09

@@ -1,4 +1,3 @@
-/* static/style.css */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
@@ -11,7 +10,6 @@ body {
     background-size: cover;
 }
 
-/* Chế độ tối */
 body.dark {
     background: linear-gradient(135deg, #2c3e50, #34495e);
     color: #ecf0f1;
@@ -100,7 +98,7 @@ body.dark .sidebar p {
 }
 
 .container {
-    background: rgba(255, 255, 255, 0.85); /* Màu nền hài hòa với background */
+    background: rgba(255, 255, 255, 0.85);
     padding: 40px;
     border-radius: 15px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
@@ -265,23 +263,23 @@ input[type="file"] {
     display: block;
     width: 100%;
     padding: 12px;
-    background-color: #00c4b4; /* Màu xanh lam sáng nổi bật */
+    background-color: #00c4b4; 
     border: 1px solid #00a69c;
     border-radius: 5px;
     text-align: left;
-    color: white; /* Chữ trắng để nổi bật */
+    color: white; 
     cursor: pointer;
 }
 
 body.dark .file-input-label {
-    background-color: #66b3ff; /* Màu sáng hơn cho chế độ tối */
+    background-color: #66b3ff;
     border: 1px solid #4a90e2;
     color: #fff;
 }
 
 input[type="file"]:focus + .file-input-label,
 .file-input-label:hover {
-    background-color: #00a69c; /* Màu khi hover */
+    background-color: #00a69c; 
 }
 
 body.dark input[type="file"]:focus + .file-input-label,

@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Cập nhật tên file đã chọn
     const fileInput = document.querySelector('input[type="file"]');
     const fileLabel = document.querySelector('.file-input-label');
     if (fileInput && fileLabel) {
