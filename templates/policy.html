@@ -1,0 +1,139 @@
+<!-- <!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chính sách sử dụng</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="{{ theme }}">
+    <div class="container policy-container">
+        <h1>Chính sách sử dụng</h1>
+        <p>Chào mừng bạn đến với ứng dụng ẩn danh dữ liệu. Vui lòng đọc kỹ các điều khoản dưới đây trước khi sử dụng:</p>
+        <ul>
+            <li>Ứng dụng này được thiết kế để ẩn danh dữ liệu nhằm bảo vệ thông tin cá nhân.</li>
+            <li>Người dùng chịu trách nhiệm với dữ liệu mà họ tải lên và đảm bảo dữ liệu không vi phạm pháp luật.</li>
+            <li>Chúng tôi không lưu trữ dữ liệu của bạn sau khi bạn đăng xuất hoặc reset trang.</li>
+            <li>Vui lòng không sử dụng ứng dụng cho các mục đích bất hợp pháp.</li>
+        </ul>
+        <form method="POST" class="policy-buttons">
+            <button type="submit" name="agree" value="true">Đồng ý</button>
+            <button type="submit" name="disagree" value="true" class="cancel">Không đồng ý</button>
+        </form>
+    </div>
+</body>
+</html> -->
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chính sách sử dụng</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background: url('{{ url_for("static", filename="background.jpg") }}') no-repeat center center fixed;
+            background-size: cover;
+            background-color: #2c3e50;
+            min-height: 100vh;
+        }
+        body::before {
+            display: none;
+        }
+        .policy-container {
+            max-width: 500px;
+            padding: 20px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.85);
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        body.dark .policy-container {
+            background: rgba(52, 73, 94, 0.85);
+        }
+        .policy-container h1 {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .policy-container h1 {
+            font-size: 2em; /* Giảm từ 2em xuống 1.5em */
+            color: #333;
+            margin-bottom: 20px;
+        }
+        body.dark .policy-container h1 {
+            color: #ecf0f1;
+        }
+        .policy-container p {
+            font-size: 1.1em; /* Giảm từ 1.1em xuống 0.9em */
+            color: #333;
+            margin-bottom: 15px;
+        }
+        body.dark .policy-container p {
+            color: #ecf0f1;
+        }
+        .policy-container ul {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 20px;
+            text-align: left;
+            display: inline-block;
+        }
+        .policy-container li {
+            font-size: 1em; /* Giảm từ 1.1em xuống 0.9em */
+            color: #333;
+            margin-bottom: 10px;
+        }
+        body.dark .policy-container li {
+            color: #ecf0f1;
+        }
+        .policy-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        .policy-buttons button {
+            padding: 10px 20px;
+            font-size: 1em; /* Giảm từ 1.1em xuống 1em */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .policy-buttons button[name="agree"] {
+            background-color: #00c4b4;
+        }
+        .policy-buttons button[name="agree"]:hover {
+            background-color: #00a69c;
+        }
+        .policy-buttons .cancel {
+            background-color: #e74c3c;
+        }
+        .policy-buttons .cancel:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body class="{{ theme }}">
+    <div class="policy-container">
+        <h1>Chính sách sử dụng</h1>
+        <p>Chào mừng bạn đến với ứng dụng ẩn danh dữ liệu. Trước khi sử dụng, vui lòng đọc và đồng ý với các điều khoản sau:</p>
+        <ul>
+            <li>Ứng dụng này được thiết kế để ẩn danh dữ liệu nhằm bảo vệ thông tin cá nhân.</li>
+            <li>Người dùng chịu trách nhiệm về dữ liệu tải lên và đảm bảo không vi phạm quyền riêng tư của bên thứ ba.</li>
+            <li>Chúng tôi không lưu trữ dữ liệu của bạn sau khi quá trình ẩn danh hoàn tất.</li>
+            <li>Mọi hành vi sử dụng ứng dụng cho mục đích bất hợp pháp đều bị nghiêm cấm.</li>
+        </ul>
+        <form method="POST" class="policy-buttons">
+            <button type="submit" name="agree" value="true">Đồng ý</button>
+            <button type="submit" class="cancel">Từ chối</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background: url('{{ url_for("static", filename="background.jpg") }}') no-repeat center center fixed;
+            background-size: cover;
+            background-color: #2c3e50;
+            min-height: 100vh;
+        }
+        body::before {
+            display: none;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            max-width: 600px; /* Tăng từ 500px lên 600px */
+            margin: 0 auto;
+        }
+        body.dark .container {
+            background: rgba(52, 73, 94, 0.85);
+        }
+        .header {
+            font-size: 2em; /* Giảm từ 3em xuống 2em */
+            color: #00c4b4;
+            margin-bottom: 20px;
+        }
+        body.dark .header {
+            color: #66b3ff;
+        }
+        .welcome-text {
+            font-size: 1.8em; /* Giảm từ 2.5em xuống 1.8em */
+            color: #3498db;
+            margin: 30px 0;
+        }
+        body.dark .welcome-text {
+            color: #66b3ff;
+        }
+        .links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+            font-size: 1.5em; /* Giảm từ 2em xuống 1.5em */
+        }
+        .links a {
+            color: #3498db;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+        body.dark .links a {
+            color: #66b3ff;
+        }
+        .links a:hover {
+            background-color: #e0f7fa;
+            text-decoration: none;
+        }
+        body.dark .links a:hover {
+            background-color: #34495e;
+        }
+    </style>
+</head>
+<body class="{{ theme }}">
+    <div class="layout">
+        <div class="sidebar" id="sidebar">
+            <button class="toggle-sidebar" onclick="toggleSidebar()">Ẩn Sidebar</button>
+            <h3>Hướng dẫn</h3>
+            <p>1. Chọn file CSV cần ẩn danh.</p>
+            <p>2. Nhập giá trị k cho k-anonymity.</p>
+            <p>3. (Tùy chọn) Nhập cột mục tiêu.</p>
+            <p>4. Nhấn "Ẩn danh" để bắt đầu.</p>
+            <p>5. Xem kết quả và tải file đã ẩn danh.</p>
+            <h3>Liên kết nhanh</h3>
+            <p><a href="{{ url_for('index') }}">Trang chủ</a></p>
+            {% if role == 'guest' %}
+                <p><a href="{{ url_for('anonymize') }}">Ẩn danh dữ liệu</a></p>
+                <p><a href="{{ url_for('login') }}">Đăng nhập</a></p>
+                <p><a href="{{ url_for('register') }}">Đăng ký</a></p>
+            {% else %}
+                <p><a href="{{ url_for('user_profile') }}">Hồ sơ</a></p>
+                <p><a href="{{ url_for('anonymize') }}">Ẩn danh dữ liệu</a></p>
+                <p><a href="{{ url_for('logout') }}">Đăng xuất</a></p>
+            {% endif %}
+        </div>
+
+        <div class="main-content" id="content">
+            <div class="container">
+                <h1 class="header">Chào mừng đến với ứng dụng ẩn danh dữ liệu</h1>
+                {% if role == 'guest' %}
+                    <p class="welcome-text">Bạn đang sử dụng với tư cách khách!</p>
+                    <div class="links">
+                        <a href="{{ url_for('anonymize') }}">Ẩn danh dữ liệu</a>
+                        <a href="{{ url_for('login') }}">Đăng nhập</a>
+                        <a href="{{ url_for('register') }}">Đăng ký</a>
+                    </div>
+                {% else %}
+                    <p class="welcome-text">Xin chào, {{ session['username'] }}!</p>
+                    <div class="links">
+                        <a href="{{ url_for('user_profile') }}">Hồ sơ</a>
+                        <a href="{{ url_for('anonymize') }}">Ẩn danh dữ liệu</a>
+                        <a href="{{ url_for('logout') }}">Đăng xuất</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const content = document.getElementById('content');
+            const toggleButton = document.querySelector('.toggle-sidebar');
+            sidebar.classList.toggle('hidden');
+            content.classList.toggle('full');
+            toggleButton.textContent = sidebar.classList.contains('hidden') ? 'Hiện Sidebar' : 'Ẩn Sidebar';
+        }
+    </script>
+</body>
+</html>

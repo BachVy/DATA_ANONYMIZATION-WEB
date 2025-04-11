@@ -1,0 +1,496 @@
+/* static/style.css */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #e0f7fa, #80deea);
+    color: #333;
+    position: relative;
+    overflow-x: hidden;
+    background-size: cover;
+}
+
+/* Chế độ tối */
+body.dark {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    color: #ecf0f1;
+}
+
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="20" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+    opacity: 0.3;
+    z-index: -1;
+}
+
+.layout {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-right: 1px solid #ddd;
+    transition: transform 0.3s ease;
+}
+
+body.dark .sidebar {
+    background: rgba(44, 62, 80, 0.95);
+    border-right: 1px solid #555;
+}
+
+.sidebar.hidden {
+    transform: translateX(-250px);
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+    transition: margin-left 0.3s ease;
+}
+
+.main-content.full {
+    margin-left: 0;
+}
+
+.toggle-sidebar {
+    background-color: #95a5a6;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.toggle-sidebar:hover {
+    background-color: #7f8c8d;
+}
+
+.sidebar h3 {
+    font-size: 1.5em;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+body.dark .sidebar h3 {
+    color: #ecf0f1;
+}
+
+.sidebar p {
+    font-size: 1.1em;
+    color: #555;
+    margin: 10px 0;
+}
+
+body.dark .sidebar p {
+    color: #bdc3c7;
+}
+
+.container {
+    background: rgba(255, 255, 255, 0.85); /* Màu nền hài hòa với background */
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    max-width: 900px;
+    width: 100%;
+    text-align: center;
+    margin: 0 auto;
+}
+
+body.dark .container {
+    background: rgba(44, 62, 80, 0.85);
+}
+
+.policy-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+}
+
+.policy-container h1 {
+    font-size: 2.5em;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+body.dark .policy-container h1 {
+    color: #ecf0f1;
+}
+
+.policy-container p {
+    font-size: 1.2em;
+    color: #555;
+    margin: 10px 0;
+    max-width: 600px;
+}
+
+body.dark .policy-container p {
+    color: #bdc3c7;
+}
+
+.policy-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    max-width: 600px;
+    text-align: left;
+}
+
+.policy-container li {
+    font-size: 1.1em;
+    color: #555;
+    margin: 10px 0;
+    position: relative;
+    padding-left: 20px;
+}
+
+body.dark .policy-container li {
+    color: #bdc3c7;
+}
+
+.policy-container li:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #3498db;
+    font-size: 1.2em;
+}
+
+.policy-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+h1 {
+    font-size: 2.5em;
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+body.dark h1 {
+    color: #ecf0f1;
+}
+
+h2 {
+    font-size: 1.8em;
+    color: #34495e;
+    margin-top: 30px;
+}
+
+body.dark h2 {
+    color: #bdc3c7;
+}
+
+h4 {
+    font-size: 1.5em;
+    color: #2980b9;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+body.dark h4 {
+    color: #3498db;
+}
+
+p, label {
+    font-size: 1.2em;
+    color: #555;
+    margin: 10px 0;
+    display: block;
+    text-align: center;
+}
+
+body.dark p, body.dark label {
+    color: #bdc3c7;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+select {
+    width: 80%;
+    padding: 12px;
+    margin: 10px auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1em;
+    box-sizing: border-box;
+    display: block;
+}
+
+body.dark input[type="text"],
+body.dark input[type="password"],
+body.dark input[type="number"],
+body.dark select {
+    border: 1px solid #555;
+    background: #34495e;
+    color: #ecf0f1;
+}
+
+.file-input-wrapper {
+    position: relative;
+    width: 80%;
+    margin: 10px auto;
+}
+
+input[type="file"] {
+    width: 100%;
+    padding: 12px;
+    font-size: 1em;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+}
+
+.file-input-label {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: #00c4b4; /* Màu xanh lam sáng nổi bật */
+    border: 1px solid #00a69c;
+    border-radius: 5px;
+    text-align: left;
+    color: white; /* Chữ trắng để nổi bật */
+    cursor: pointer;
+}
+
+body.dark .file-input-label {
+    background-color: #66b3ff; /* Màu sáng hơn cho chế độ tối */
+    border: 1px solid #4a90e2;
+    color: #fff;
+}
+
+input[type="file"]:focus + .file-input-label,
+.file-input-label:hover {
+    background-color: #00a69c; /* Màu khi hover */
+}
+
+body.dark input[type="file"]:focus + .file-input-label,
+body.dark .file-input-label:hover {
+    background-color: #4a90e2;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+    margin: 10px 5px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+button.cancel {
+    background-color: #e74c3c;
+}
+
+button.cancel:hover {
+    background-color: #c0392b;
+}
+
+button.download {
+    background-color: #2ecc71;
+}
+
+button.download:hover {
+    background-color: #27ae60;
+}
+
+button.preview {
+    background-color: #f39c12;
+}
+
+button.preview:hover {
+    background-color: #e67e22;
+}
+
+button.reset {
+    background-color: #7f8c8d;
+}
+
+button.reset:hover {
+    background-color: #6c757d;
+}
+
+.alert {
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 5px;
+    font-size: 1.1em;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.results-section {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    text-align: left;
+}
+
+body.dark .results-section {
+    background: #34495e;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+}
+
+li {
+    font-size: 1.1em;
+    color: #555;
+    margin: 10px 0;
+}
+
+body.dark li {
+    color: #bdc3c7;
+}
+
+a {
+    color: #3498db;
+    text-decoration: none;
+    font-size: 1.1em;
+    margin: 0 10px;
+}
+
+body.dark a {
+    color: #66b3ff;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+.button-group {
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.preview-table th,
+.preview-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    font-size: 1em;
+}
+
+body.dark .preview-table th,
+body.dark .preview-table td {
+    border: 1px solid #555;
+}
+
+.preview-table th {
+    background-color: #f1f1f1;
+    color: #333;
+}
+
+body.dark .preview-table th {
+    background-color: #3d566e;
+    color: #ecf0f1;
+}
+
+.preview-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+body.dark .preview-table tbody tr:nth-child(even) {
+    background-color: #3d566e;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.spinner {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+    color: white;
+    font-size: 1.3em;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.logo-bar {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.logo-bar img {
+    width: 40px;
+    height: 40px;
+    opacity: 0.8;
+}

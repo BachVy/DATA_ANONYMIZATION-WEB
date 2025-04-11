@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background: url('{{ url_for("static", filename="background.jpg") }}') no-repeat center center fixed;
+            background-size: cover;
+            background-color: #2c3e50;
+            min-height: 100vh;
+        }
+        body::before {
+            display: none;
+        }
+        .container {
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            margin: 50px auto;
+            text-align: center;
+        }
+        body.dark .container {
+            background: rgba(52, 73, 94, 0.85);
+        }
+        h1 {
+            color: #333;
+        }
+        body.dark h1 {
+            color: #ecf0f1;
+        }
+        label {
+            color: #333;
+        }
+        body.dark label {
+            color: #ecf0f1;
+        }
+        p {
+            color: #333;
+        }
+        body.dark p {
+            color: #ecf0f1;
+        }
+        .guest-login {
+            background-color: #f1c40f;
+            margin-top: 10px;
+        }
+        .guest-login:hover {
+            background-color: #d4ac0d;
+        }
+    </style>
+</head>
+<body class="{{ theme }}">
+    <div class="container">
+        <h1>Đăng nhập</h1>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <label for="username">Tên người dùng:</label>
+            <input type="text" id="username" name="username">
+            <label for="password">Mật khẩu:</label>
+            <input type="password" id="password" name="password">
+            <button type="submit">Đăng nhập</button>
+            <button type="submit" name="guest_login" value="true" class="guest-login">Đăng nhập với tư cách khách</button>
+        </form>
+        <p>Chưa có tài khoản? <a href="{{ url_for('register') }}">Đăng ký ngay</a></p>
+    </div>
+</body>
+</html>
