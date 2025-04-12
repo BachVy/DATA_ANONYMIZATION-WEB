@@ -8,8 +8,6 @@ A web application for data anonymization using the k-anonymity principle and the
 - [Usage](#usage)
 - [Project Structure](#project-structure)
 - [How It Works](#how-it-works)
-- [Notes](#notes)
-- [License](#license)
 
 ## Overview
 `DATA_ANONYMIZATION-WEB` is a Flask-based web application that allows users to anonymize datasets while preserving privacy using k-anonymity and the APO_ARO algorithm. The application supports user authentication, guest mode, theme switching (light/dark), and provides a user-friendly interface to upload datasets, configure anonymization parameters, and download results.
