@@ -1,0 +1,1222 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/BachVy/DATA_ANONYMIZATION-WEB/blob/main/TTNT_Tuan03.pdf\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# A. THUẬT GIẢI MINIMAX ỨNG DỤNG VÀO BÀI TOÁN TICTACTOE"
+      ],
+      "metadata": {
+        "id": "O5aUQmPAcCkl"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import copy\n",
+        "import math\n",
+        "import random\n",
+        "import numpy"
+      ],
+      "metadata": {
+        "id": "xXxcYbZjwn9_"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Import các thư viện cần thiết"
+      ],
+      "metadata": {
+        "id": "A6el_zRA2q14"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "X = \"X\"\n",
+        "O = \"O\"\n",
+        "EMPTY = None\n",
+        "user = None\n",
+        "ai = None"
+      ],
+      "metadata": {
+        "id": "VvxlmpvYya9Y"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Thiết lập các giá trị cơ bản dùng để xác định người chơi, máy và trạng thái ô trên bàn cờ trước khi trò chơi bắt đầu."
+      ],
+      "metadata": {
+        "id": "BS1JTZ4x9DQZ"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def initial_state():\n",
+        "    return [[EMPTY, EMPTY, EMPTY],\n",
+        "            [EMPTY, EMPTY, EMPTY],\n",
+        "            [EMPTY, EMPTY, EMPTY]]"
+      ],
+      "metadata": {
+        "id": "C3vrAqqaymOv"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Khởi tạo bàn cờ rỗng kích thước 3x3."
+      ],
+      "metadata": {
+        "id": "EEoAreW63aGp"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def player(board):\n",
+        "    \"\"\"\n",
+        "    Returns player who has the next turn on a board.\n",
+        "    \"\"\"\n",
+        "    count = 0\n",
+        "    for i in board:\n",
+        "        for j in i:\n",
+        "            if j:\n",
+        "                count += 1\n",
+        "    if count % 2 != 0:\n",
+        "        return ai\n",
+        "    return user"
+      ],
+      "metadata": {
+        "id": "Rswh3mNozJjQ"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Đầu vào:** Hàm nhận vào một biến board là một mảng 2 chiều, đại diện cho lưới ô vuông của bàn cờ.\n",
+        "\n",
+        "**1. Đếm ô đã đánh:**\n",
+        "- Sử dụng hai vòng lặp for lồng nhau để duyệt qua tất cả các ô trên bàn cờ.\n",
+        "- Kiểm tra xem ô hiện tại (j) có chứa giá trị nào không.\n",
+        "- Biến count được tăng lên mỗi khi tìm thấy một ô đã được đánh.\n",
+        "\n",
+        "**2. Xác định lượt đi:**\n",
+        "- Người chơi bắt đầu là người đánh lượt lẻ và người chơi thứ hai là người đánh lượt chẵn.\n",
+        "- Nếu count là số lẻ thì trả về người chơi là ai.\n",
+        "- Nếu count là số chẵn thì trả về người chơi là user."
+      ],
+      "metadata": {
+        "id": "7O9sus3K9bbJ"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def actions(board):\n",
+        "    \"\"\"\n",
+        "    Returns set of all possible actions (i, j) available on the board.\n",
+        "    \"\"\"\n",
+        "    res = set()\n",
+        "    board_len = len(board)\n",
+        "    for i in range(board_len):\n",
+        "        for j in range(board_len):\n",
+        "            if board[i][j] == EMPTY:\n",
+        "                res.add((i, j))\n",
+        "    return res"
+      ],
+      "metadata": {
+        "id": "sl283S2xzJmY"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** Hàm actions(board) dùng để trả về một tập hợp (set) chứa tọa độ (i, j) của tất cả các ô mà người chơi tiếp theo có thể đặt quân cờ của mình vào.\n",
+        "\n",
+        "**1. Duyệt bàn cờ:**\n",
+        "- Lấy kích thước của bàn cờ.\n",
+        "- Duyệt qua tất cả các ô trên bàn cờ, i đại diện cho chỉ số hàng (row) và j đại diện cho chỉ số cột.\n",
+        "\n",
+        "**2. Kiểm tra ô trống:**\n",
+        "- Kiểm tra xem ô hiện tại có rỗng không.\n",
+        "- Nếu ô tại tọa độ (i, j) trống thì tọa độ đó được thêm vào res.\n",
+        "\n",
+        "**Kết quả:** Hàm trả về tập hợp res chứa tất cả các tọa độ của các ô trống."
+      ],
+      "metadata": {
+        "id": "-oDgTeE_-Q-p"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def result(board, action):\n",
+        "    curr_player = player(board)\n",
+        "    result_board = copy.deepcopy(board)\n",
+        "    (i, j) = action\n",
+        "    result_board[i][j] = curr_player\n",
+        "    return result_board"
+      ],
+      "metadata": {
+        "id": "wIsFAMk-zJpA"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** Hàm result(board, action) mô phỏng một nước đi và trả về bàn cờ mới mà không làm thay đổi bàn cờ gốc.\n",
+        "\n",
+        "**1. Xác định người chơi hiện tại:** Gọi hàm player(board) (mà chúng ta đã phân tích trước đó) để xác định người chơi nào đang đến lượt đi.\n",
+        "\n",
+        "**2. Tạo bản sao**\n",
+        "\n",
+        "**3. Thực hiện nước đi:**\n",
+        "- Lấy tọa độ của nước đi.\n",
+        "- Tại tọa độ (i, j) trên bàn cờ sao chép, ô trống được đánh dấu bằng ký hiệu của người chơi hiện tại.\n",
+        "\n",
+        "**Kết quả:** Hàm trả về result_board, tức là trạng thái bàn cờ mới sau khi người chơi đã thực hiện nước đi."
+      ],
+      "metadata": {
+        "id": "6RP0DH-RC_b6"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def get_horizontal_winner(board):\n",
+        "    # check horizontally\n",
+        "    winner_val = None\n",
+        "    board_len = len(board)\n",
+        "    for i in range(board_len):\n",
+        "        winner_val = board[i][0]\n",
+        "        for j in range(board_len):\n",
+        "            if board[i][j] != winner_val:\n",
+        "                winner_val = None\n",
+        "        if winner_val:\n",
+        "            return winner_val\n",
+        "    return winner_val"
+      ],
+      "metadata": {
+        "id": "fDPkjZL0zJro"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** Kiểm tra hàng ngang tìm người thắng.\n",
+        "\n",
+        "**1. Duyệt từng hàng:**\n",
+        "- Duyệt qua từng hàng i.\n",
+        "- Gán người chơi ở ô đầu tiên của hàng hiện tại là người chiến thắng của hàng đó.\n",
+        "\n",
+        "**2. Duyệt qua từng ô trong hàng hiện tại:**\n",
+        "- Nếu có bất kỳ ô nào trong hàng không khớp với giá trị winner_val ban đầu hoặc nếu winner_val là ô trống thì hàng đó không thể tạo thành một đường thắng.\n",
+        "- Loại bỏ người đó.\n",
+        "\n",
+        "**3. Xác nhận:**\n",
+        "- Sau khi kiểm tra xong một hàng, nếu winner_val vẫn giữ được giá trị ban đầu thì giá trị của người chơi thắng được trả về ngay lập tức.\n",
+        "- Nếu không tìm thấy hàng chiến thắng thì hàm trả về None."
+      ],
+      "metadata": {
+        "id": "yc_C_5yAFxwq"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def get_vertical_winner(board):\n",
+        "    # check vertically\n",
+        "    winner_val = None\n",
+        "    board_len = len(board)\n",
+        "    for i in range(board_len):\n",
+        "        winner_val = board[0][i]\n",
+        "        for j in range(board_len):\n",
+        "            if board[j][i] != winner_val:\n",
+        "                winner_val = None\n",
+        "        if winner_val:\n",
+        "            return winner_val\n",
+        "    return winner_val"
+      ],
+      "metadata": {
+        "id": "BWqSw59YFuqy"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** Kiểm tra hàng dọc tìm người thắng.\n",
+        "\n",
+        "**1. Duyệt từng cột:**\n",
+        "- Duyệt qua từng cột i.\n",
+        "- Gán người chơi ở ô đầu tiên của cột hiện tại là người chiến thắng.\n",
+        "\n",
+        "**2. Duyệt qua từng ô trong cột hiện tại:**\n",
+        "- Nếu có bất kỳ ô nào trong cột không khớp với giá trị winner_val ban đầu hoặc nếu winner_val là ô trống thì cột đó không thể tạo thành một đường thắng.\n",
+        "- Loại bỏ người đó.\n",
+        "\n",
+        "**3. Xác nhận:**\n",
+        "- Sau khi kiểm tra xong một cột, nếu winner_val vẫn giữ được giá trị ban đầu thì giá trị của người chơi thắng được trả về ngay lập tức.\n",
+        "- Nếu không tìm thấy cột chiến thắng thì hàm trả về None."
+      ],
+      "metadata": {
+        "id": "LrdPX-HMFLyS"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def get_diagonal_winner(board):\n",
+        "    # check diagonally\n",
+        "    winner_val = None\n",
+        "    board_len = len(board)\n",
+        "    winner_val = board[0][0]\n",
+        "    for i in range(board_len):\n",
+        "        if board[i][i] != winner_val:\n",
+        "            winner_val = None\n",
+        "    if winner_val:\n",
+        "        return winner_val\n",
+        "    winner_val = board[0][board_len - 1]\n",
+        "    for i in range(board_len):\n",
+        "        j = board_len - 1 - i\n",
+        "        if board[i][j] != winner_val:\n",
+        "            winner_val = None\n",
+        "    return winner_val"
+      ],
+      "metadata": {
+        "id": "BVarwDt-zJug"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** Kiểm tra hàng chéo tìm người thắng.\n",
+        "\n",
+        "**1. Duyệt từng hàng chéo:**\n",
+        "- Duyệt qua từng hàng chéo i.\n",
+        "- Gán người chơi ở ô đầu tiên của hàng chéo hiện tại là người chiến thắng.\n",
+        "\n",
+        "**2. Duyệt qua từng ô trong hàng chéo:**\n",
+        "- Nếu có bất kỳ ô nào trong hàng chéo không khớp với giá trị winner_val ban đầu hoặc nếu winner_val là ô trống thì hàng chéo đó không thể tạo thành một đường thắng.\n",
+        "- Loại bỏ người đó.\n",
+        "\n",
+        "**3. Xác nhận:**\n",
+        "- Sau khi kiểm tra xong một hàng chéo, nếu winner_val vẫn giữ được giá trị ban đầu thì giá trị của người chơi thắng được trả về ngay lập tức.\n",
+        "- Nếu không tìm thấy hàng chéo chiến thắng thì hàm trả về None."
+      ],
+      "metadata": {
+        "id": "LNXOocIsIki6"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def winner(board):\n",
+        "    winner_val = get_horizontal_winner(board) or get_vertical_winner(board) or get_diagonal_winner(board) or None\n",
+        "    return winner_val"
+      ],
+      "metadata": {
+        "id": "WHy0x0A0FQb6"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** Kiểm tra và trả về người chơi thắng\n",
+        "\n",
+        "- Kiểm tra hàng ngang. Nếu tìm thấy người thắng, giá trị đó được gán cho winner_val và kết thúc.\n",
+        "- Nếu không có người thắng hàng ngang, kiểm tra tiếp tục hàng dọc.\n",
+        "- Nếu không có người thắng hàng ngang hay cột dọc, tiếp tục kiểm tra đường chéo.\n",
+        "- Nếu cả ba hàm trên đều trả về None thì giá trị cuối cùng được gán cho winner_val là None."
+      ],
+      "metadata": {
+        "id": "lFCpPbKaJLnK"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def terminal(board):\n",
+        "    if winner(board) != None:\n",
+        "        return True\n",
+        "    for i in board:\n",
+        "        for j in i:\n",
+        "            if j == EMPTY:\n",
+        "                return False\n",
+        "    return True"
+      ],
+      "metadata": {
+        "id": "3VPwbxZmzJ6I"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** Kiểm tra trạng thái, trả về True nếu trò chơi không thể tiếp tục và False nếu vẫn còn nước đi.\n",
+        "\n",
+        "Kiểm tra điều kiện thắng:\n",
+        "- Gọi hàm winner(board) để kiểm tra có người chơi nào đã giành chiến thắng chưa. Nếu có người thắng thì hàm trả về True.\n",
+        "- Nếu không có người thắng, tiếp tục kiểm tra xem còn ô trống không. Nếu có thì hàm trả về False.\n",
+        "- Nếu hết vòng lặp mà không tìm thấy ô trống và không có ai thắng thì trả về True.\n"
+      ],
+      "metadata": {
+        "id": "VhIH-dxBKm3L"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def utility(board):\n",
+        "    winner_val = winner(board)\n",
+        "    if winner_val == X:\n",
+        "        return 1\n",
+        "    elif winner_val == O:\n",
+        "        return -1\n",
+        "    return 0\n"
+      ],
+      "metadata": {
+        "id": "US0kCQuyzsNI"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** Hàm đánh giá cho trạng thái bàn cờ khi trò chơi đã kết thúc.\n",
+        "\n",
+        "**1. Xác định người chiến thắng của bàn cờ hiện tại**\n",
+        "\n",
+        "**2. Gán Điểm số:**\n",
+        "- Nếu người chơi X thắng, hàm trả về 1.\n",
+        "- Nếu người chơi O thắng, hàm trả về -1.\n",
+        "- Nếu không có ai thắng, hàm trả về 0.\n",
+        "\n",
+        "**Vai trò:** Cho phép thuật toán tính toán ngược từ các trạng thái kết thúc trở về trạng thái hiện tại để chọn nước đi tối ưu."
+      ],
+      "metadata": {
+        "id": "2KfxgH_3M91D"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def maxValue(state):\n",
+        "    if terminal(state):\n",
+        "        return utility(state)\n",
+        "    v = -math.inf\n",
+        "    for action in actions(state):\n",
+        "        v = max(v, minValue(result(state, action)))\n",
+        "    return v"
+      ],
+      "metadata": {
+        "id": "FjSk1EtYzsPg"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** Tính toán giá trị tối đa mà người chơi có thể đạt được trong trò chơi.\n",
+        "\n",
+        "- Xác định điều kiện dừng: Nếu trạng thái bàn cờ hiện tại là trạng thái kết thúc thì trả về utility của trạng thái đó.\n",
+        "- Lặp qua tất cả action từ trạng thái hiện tại.\n",
+        "- Tạo ra trạng thái bàn cờ mới sau khi thực hiện action.\n",
+        "- Gọi đệ quy hàm minValue để mô phỏng việc người chơi Max chọn một nước đi và sau đó Min sẽ chơi tối ưu trên trạng thái đó.\n",
+        "- Người chơi Max chọn giá trị lớn nhất trong số tất cả các giá trị mà đối thủ (Min) có thể trả lại.\n",
+        "\n",
+        "**Kết quả:** trả về giá trị tiện ích tối đa mà người chơi Max có thể đạt được từ trạng thái hiện tại."
+      ],
+      "metadata": {
+        "id": "Rnr1JcByPD0r"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def minValue(state):\n",
+        "    if terminal(state):\n",
+        "        return utility(state)\n",
+        "    v = math.inf\n",
+        "    for action in actions(state):\n",
+        "        v = min(v, maxValue(result(state, action)))\n",
+        "    return v"
+      ],
+      "metadata": {
+        "id": "jeQG5Qq1Kr5y"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** Tính toán giá trị tối thiểu mà người chơi có thể đạt được trong trò chơi.\n",
+        "\n",
+        "- Xác định điều kiện dừng: Nếu trạng thái bàn cờ hiện tại là trạng thái kết thúc thì trả về utility của trạng thái đó.\n",
+        "- Lặp qua tất cả action từ trạng thái hiện tại.\n",
+        "- Tạo ra trạng thái bàn cờ mới sau khi thực hiện action.\n",
+        "- Gọi đệ quy hàm maxValue để mô phỏng việc người chơi Min chọn một nước đi và sau đó đối thủ (Max) sẽ chơi tối ưu trên trạng thái đó.\n",
+        "- Người chơi Min chọn giá trị nhỏ nhất trong số tất cả các giá trị mà đối thủ (Max) có thể trả lại.\n",
+        "\n",
+        "**Kết quả:** trả về giá trị tiện ích tối đa mà người chơi Min có thể đạt được từ trạng thái hiện tại."
+      ],
+      "metadata": {
+        "id": "YIPYumrlSUFb"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def minimax(board):\n",
+        "    current_player = player(board)\n",
+        "    if current_player == X:\n",
+        "        max = -math.inf\n",
+        "        for action in actions(board):\n",
+        "            check = minValue(result(board, action))  # FIXED\n",
+        "            if check > max:\n",
+        "                max = check\n",
+        "                move = action\n",
+        "    else:\n",
+        "        min = math.inf\n",
+        "        for action in actions(board):\n",
+        "            check = maxValue(result(board, action))  # FIXED\n",
+        "            if check < min:\n",
+        "                min = check\n",
+        "                move = action\n",
+        "    return move\n"
+      ],
+      "metadata": {
+        "id": "vsSNYgxnzsVI"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** Xác định nước đi tốt nhất mà người chơi nên thực hiện tại trạng thái bàn cờ hiện tại.\n",
+        "\n",
+        "**Xác định người chơi hiện tại:**\n",
+        "\n",
+        "**1. Nếu là Max:**\n",
+        "- Khởi tạo giá trị tiện ích.\n",
+        "- Duyệt qua tất cả các nước đi hợp lệ.\n",
+        "- Đối với mỗi nước đi, hàm tính toán giá trị Minimax bằng cách gọi minValue trên trạng thái bàn cờ kết quả sau nước đi đó.\n",
+        "- Nếu giá trị check mà nước đi này mang lại lớn hơn giá trị tối đa đã tìm thấy (max) thì nước đi này là tốt hơn.\n",
+        "- Cập nhật giá trị tối đa mới.\n",
+        "- Lưu lại nước đi tối ưu tương ứng.\n",
+        "\n",
+        "**2. Nếu là Min:**\n",
+        "- Khởi tạo giá trị tiện ích.\n",
+        "- Duyệt qua tất cả các nước đi hợp lệ.\n",
+        "- Đối với mỗi nước đi, hàm tính toán giá trị Minimax bằng cách gọi maxValue trên trạng thái bàn cờ kết quả sau nước đi đó.\n",
+        "- Nếu giá trị check mà nước đi này mang lại nhỏ hơn giá trị tối thiểu đã tìm thấy (min) thì nước đi này là tốt hơn.\n",
+        "- Cập nhật giá trị tối thiểu mới.\n",
+        "- Lưu lại nước đi tối ưu tương ứng.\n",
+        "\n",
+        "**Kết quả:** Trả về move là tọa độ (i, j) của nước đi tốt nhất mà người chơi hiện tại nên thực hiện."
+      ],
+      "metadata": {
+        "id": "YcbqPA8mTDS7"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "if __name__ == \"__main__\":\n",
+        "    board = initial_state()\n",
+        "    ai_turn = False\n",
+        "    print(\"Choose a player\")\n",
+        "    user = input()\n",
+        "    if user == \"X\":\n",
+        "        ai = \"O\"\n",
+        "    else:\n",
+        "        ai = \"X\"\n",
+        "    while True:\n",
+        "        game_over = terminal(board)\n",
+        "        playr = player(board)\n",
+        "        if game_over:\n",
+        "            winner = winner(board)\n",
+        "            if winner is None:\n",
+        "                print(\"Game Over: Tie.\")\n",
+        "            else:\n",
+        "                print(f\"Game Over: {winner} wins.\")\n",
+        "            break;\n",
+        "        else:\n",
+        "            if user != playr and not game_over:\n",
+        "                if ai_turn:\n",
+        "                    move = minimax(board)\n",
+        "                    board = result(board, move)\n",
+        "                    ai_turn = False\n",
+        "                    print(numpy.array(board))\n",
+        "            elif user == playr and not game_over:\n",
+        "                ai_turn = True\n",
+        "                print(\"Enter the position to move (row,col)\")\n",
+        "                i = int(input(\"Row:\"))\n",
+        "                j = int(input(\"Col:\"))\n",
+        "                if board[i][j] == EMPTY:\n",
+        "                    board = result(board, (i, j))\n",
+        "                    print(numpy.array(board))"
+      ],
+      "metadata": {
+        "id": "7aFybuHc1_uQ",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "outputId": "97bc1875-8239-4732-cb66-1a3dcb8060f7"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Choose a player\n",
+            "X\n",
+            "Enter the position to move (row,col)\n",
+            "Row:1\n",
+            "Col:1\n",
+            "[[None None None]\n",
+            " [None 'X' None]\n",
+            " [None None None]]\n",
+            "[['O' None None]\n",
+            " [None 'X' None]\n",
+            " [None None None]]\n",
+            "Enter the position to move (row,col)\n",
+            "Row:0\n",
+            "Col:1\n",
+            "[['O' 'X' None]\n",
+            " [None 'X' None]\n",
+            " [None None None]]\n",
+            "[['O' 'X' None]\n",
+            " [None 'X' None]\n",
+            " [None 'O' None]]\n",
+            "Enter the position to move (row,col)\n",
+            "Row:1\n",
+            "Col:0\n",
+            "[['O' 'X' None]\n",
+            " ['X' 'X' None]\n",
+            " [None 'O' None]]\n",
+            "[['O' 'X' None]\n",
+            " ['X' 'X' 'O']\n",
+            " [None 'O' None]]\n",
+            "Enter the position to move (row,col)\n",
+            "Row:0\n",
+            "Col:2\n",
+            "[['O' 'X' 'X']\n",
+            " ['X' 'X' 'O']\n",
+            " [None 'O' None]]\n",
+            "[['O' 'X' 'X']\n",
+            " ['X' 'X' 'O']\n",
+            " ['O' 'O' None]]\n",
+            "Enter the position to move (row,col)\n",
+            "Row:2\n",
+            "Col:2\n",
+            "[['O' 'X' 'X']\n",
+            " ['X' 'X' 'O']\n",
+            " ['O' 'O' 'X']]\n",
+            "Game Over: Tie.\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Khởi tạo và Thiết lập:**\n",
+        "- Khởi tạo bàn cờ ở trạng thái ban đầu (trống).\n",
+        "- Biến cờ ban đầu để kiểm soát lượt đi của ai.\n",
+        "\n",
+        "**Vòng lặp chính:**\n",
+        "- Kiểm tra xem trò chơi đã kết thúc hay chưa.\n",
+        "- Xác định người chơi hiện tại đang đến lượt đi.\n",
+        "\n",
+        "**Xử lý kết thúc trò chơi:**\n",
+        "- Nếu winner là None, in ra \"Game Over: Tie.\"\n",
+        "- Ngược lại, in ra người thắng.\n",
+        "\n",
+        "**Xử lý lượt đi của ai:**\n",
+        "- ai sử dụng thuật toán Minimax để tính toán nước đi tối ưu nhất\n",
+        "- Cập nhật bàn cờ với nước đi của ai\n",
+        "- Đặt lại cờ thành false.\n",
+        "- Hiển thị bàn cờ sau nước đi của ai.\n",
+        "\n",
+        "**Xử lý lượt đi của người chơi:**\n",
+        "- Đặt cờ để chuẩn bị cho lượt ai tiếp theo.\n",
+        "- Yêu cầu người chơi nhập tọa độ hàng (i) và cột (j).\n",
+        "- Kiểm tra nếu có ô trống thì cập nhật bàn cờ với nước đi của người chơi.\n",
+        "- Hiển thị bàn cờ sau nước đi của người chơi."
+      ],
+      "metadata": {
+        "id": "3aEsKvQKWGuE"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# B. THUẬT TOÁN CẮT TỈA ALPHA-BETA VỚI ỨNG DỤNG VÀO BÀI TOÁN TICTACTOE"
+      ],
+      "metadata": {
+        "id": "FlxilfardPb9"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import math\n",
+        "import os"
+      ],
+      "metadata": {
+        "id": "E2ij9caTCaYB"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Import thư viện"
+      ],
+      "metadata": {
+        "id": "PdEle3BTCxuI"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "X = \"X\"\n",
+        "O = \"O\"\n",
+        "EMPTY_CELL_TOKEN = \" \" # Sử dụng khoảng trắng thay vì số để dễ hiển thị hơn\n",
+        "BOARD_SIZE = 9"
+      ],
+      "metadata": {
+        "id": "UqVyHYGCCbIE"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "Khởi tạo hằng số trò chơi"
+      ],
+      "metadata": {
+        "id": "BKA_MBxMFdqM"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def GetWinner(board):\n",
+        "    \"\"\"\n",
+        "    Returns the winner (X hoặc O) in the current board if there is one,\n",
+        "    otherwise returns None.\n",
+        "    Board: danh sách 9 phần tử (index 0 đến 8).\n",
+        "    \"\"\"\n",
+        "    # Các tổ hợp chiến thắng (chỉ số của 3 ô liên tiếp)\n",
+        "    WIN_LINES = [\n",
+        "        # Ngang\n",
+        "        (0, 1, 2), (3, 4, 5), (6, 7, 8),\n",
+        "        # Dọc\n",
+        "        (0, 3, 6), (1, 4, 7), (2, 5, 8),\n",
+        "        # Chéo\n",
+        "        (0, 4, 8), (2, 4, 6)\n",
+        "    ]\n",
+        "\n",
+        "    for a, b, c in WIN_LINES:\n",
+        "        if board[a] == board[b] == board[c] and board[a] != EMPTY_CELL_TOKEN:\n",
+        "            return board[a]\n",
+        "\n",
+        "    return None"
+      ],
+      "metadata": {
+        "id": "i0kcsYCaCbNK"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** xác định trạng thái chiến thắng\n",
+        "1. **Khởi tạo các tổ hợp chiến thắng:** Mảng hằng số WIN_LINES là một danh sách chứa các bộ ba chỉ số (dưới dạng tuple), đại diện cho toàn bộ 8 đường thắng hợp lệ trên lưới chơi 3x3 (được biểu diễn như một mảng phẳng gồm 9 ô, từ chỉ số 0 đến 8).\n",
+        "- Hàng ngang: (0, 1, 2), (3, 4, 5), (6, 7, 8)\n",
+        "- Cột dọc: (0, 3, 6), (1, 4, 7), (2, 5, 8)\n",
+        "- Đường chéo: (0, 4, 8), (2, 4, 6)\n",
+        "2. **Duyệt và kiểm tra từng đường thắng:** Vòng lặp for a, b, c in WIN_LINES: duyệt qua từng bộ ba chỉ số chiến thắng.\n",
+        "- Kiểm tra xem ba ô trên bàn cờ tại các chỉ số $a, b, c$ có cùng một ký hiệu hay không.\n",
+        "- Đảm bảo rằng ba ô đó không phải là ô trống. Điều kiện này là cần thiết vì nếu ba ô trống có cùng giá trị(EMPTY_CELL_TOKEN), chúng sẽ thỏa mãn Phần 1, nhưng điều đó không được tính là một chiến thắng.\n",
+        "\n",
+        "**Kết quả:** Trả về ký hiệu của người chơi thắng cuộc (board[a]) và kết thúc. Nếu vòng lặp kết thúc mà không tìm thấy bất kỳ đường thắng nào, hàm sẽ trả về None.\n"
+      ],
+      "metadata": {
+        "id": "lZtc3U3QFvFu"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def PrintBoard(board):\n",
+        "    \"\"\"\n",
+        "    Clears the console and prints the current board.\n",
+        "    \"\"\"\n",
+        "    os.system('cls' if os.name == 'nt' else 'clear')\n",
+        "    print(f'''\n",
+        "    {board[0]}|{board[1]}|{board[2]}\n",
+        "    -+-+-\n",
+        "    {board[3]}|{board[4]}|{board[5]}\n",
+        "    -+-+-\n",
+        "    {board[6]}|{board[7]}|{board[8]}\n",
+        "    ''')"
+      ],
+      "metadata": {
+        "id": "4jsB4rFtCbTO"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** hiển thị bàn cờ Tic-Tac-Toe 3x3\n",
+        "1. **Xóa Console (Làm sạch màn hình):**\n",
+        "- Kiểm tra nếu hệ điều hành là Windows (NT). Nếu đúng, nó chạy lệnh cls (Clear Screen).\n",
+        "- Nếu là hệ điều hành khác (như Linux hoặc macOS), nó chạy lệnh clear.\n",
+        "2. **In bàn cờ:**\n",
+        "- Giả định rằng board là một danh sách (list) phẳng gồm 9 phần tử (từ board[0] đến board[8]), đại diện cho 9 ô trên bàn cờ.\n",
+        "- Sắp xếp 9 phần tử này thành 3 hàng và 3 cột, sử dụng ký tự gạch đứng (|) để phân cách các cột và gạch ngang (-) để phân cách các hàng."
+      ],
+      "metadata": {
+        "id": "T1d9ial4Hs4n"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def GetAvailableCells(board):\n",
+        "    available = []\n",
+        "    for i in range(BOARD_SIZE):\n",
+        "        if board[i] == EMPTY_CELL_TOKEN:\n",
+        "            available.append(i + 1)\n",
+        "    return available"
+      ],
+      "metadata": {
+        "id": "pyIUx-xpCbYR"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** cung cấp danh sách các nước đi hợp lệ (các ô trống) cho thuật toán.\n",
+        "1. **Khởi tạo danh sách:** Khởi tạo một danh sách trống để lưu trữ số thứ tự của các ô hợp lệ (ô trống) được tìm thấy.\n",
+        "2. **Duyệt qua bàn cờ:** duyệt qua tất cả các chỉ số (index) của bàn cờ, từ 0 đến 8.\n",
+        "3. **Kiểm tra trạng thái ô**: Kiểm tra giá trị của ô tại chỉ số i. Hàm chỉ quan tâm các ô có giá trị bằng EMPTY_CELL_TOKEN.\n",
+        "4. **Thêm nước đi Hợp lệ:** Nếu ô đó là trống, hàm tính toán số thứ tự của ô bằng cách lấy chỉ số mảng và cộng thêm 1.\n",
+        "\n",
+        "**Kết quả:** Trả về danh sách chứa số thứ tự của tất cả các ô hiện đang trống trên bàn cờ."
+      ],
+      "metadata": {
+        "id": "6QUyjnqPIdfB"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def minimax(position, depth, alpha, beta, isMaximizing):\n",
+        "    winner = GetWinner(position)\n",
+        "\n",
+        "    # 1. Điều kiện Dừng (Terminal Check)\n",
+        "    if winner != None:\n",
+        "        # X thắng (Maximizer) -> Giá trị dương, ưu tiên thắng nhanh\n",
+        "        if winner == X:\n",
+        "            return 10 - depth\n",
+        "        # O thắng (Minimizer) -> Giá trị âm, ưu tiên thua chậm\n",
+        "        elif winner == O:\n",
+        "            return -10 + depth\n",
+        "\n",
+        "    # Hòa\n",
+        "    if len(GetAvailableCells(position)) == 0:\n",
+        "        return 0\n",
+        "\n",
+        "    # 2. Người chơi Max (X)\n",
+        "    if isMaximizing:\n",
+        "        maxEval = -math.inf\n",
+        "\n",
+        "        # Lặp qua các nước đi khả thi\n",
+        "        for cell_num in GetAvailableCells(position):\n",
+        "            cell_index = cell_num - 1\n",
+        "\n",
+        "            # Thực hiện nước đi và gọi đệ quy\n",
+        "            position[cell_index] = X\n",
+        "            Eval = minimax(position, depth + 1, alpha, beta, False)\n",
+        "\n",
+        "            # Hoàn tác nước đi (Unmake move)\n",
+        "            position[cell_index] = EMPTY_CELL_TOKEN\n",
+        "\n",
+        "            maxEval = max(maxEval, Eval)\n",
+        "            alpha = max(alpha, Eval)\n",
+        "\n",
+        "            # Cắt tỉa (Pruning)\n",
+        "            if beta <= alpha:\n",
+        "                break\n",
+        "        return maxEval\n",
+        "\n",
+        "    # 3. Người chơi Min (O)\n",
+        "    else:\n",
+        "        minEval = math.inf\n",
+        "\n",
+        "        # Lặp qua các nước đi khả thi\n",
+        "        for cell_num in GetAvailableCells(position):\n",
+        "            cell_index = cell_num - 1\n",
+        "\n",
+        "            # Thực hiện nước đi và gọi đệ quy\n",
+        "            position[cell_index] = O\n",
+        "            Eval = minimax(position, depth + 1, alpha, beta, True)\n",
+        "\n",
+        "            # Hoàn tác nước đi (Unmake move)\n",
+        "            position[cell_index] = EMPTY_CELL_TOKEN\n",
+        "\n",
+        "            minEval = min(minEval, Eval)\n",
+        "            beta = min(beta, Eval)\n",
+        "\n",
+        "            # Cắt tỉa (Pruning)\n",
+        "            if beta <= alpha:\n",
+        "                break\n",
+        "        return minEval"
+      ],
+      "metadata": {
+        "id": "O6OiqxMkCcTJ"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** Đánh giá tất cả các nước đi tương lai có thể xảy ra từ trạng thái hiện tại để xác định xem trạng thái này cuối cùng sẽ dẫn đến chiến thắng, thất bại hay hòa và gán một giá trị số cho kết quả đó.\n",
+        "\n",
+        "**Tham số:**\n",
+        "- **position:** Trạng thái bàn cờ hiện tại.\n",
+        "- **depth:** Độ sâu hiện tại trong cây tìm kiếm (số nước đã đi từ trạng thái gốc).\n",
+        "- **alpha:**\tGiá trị tốt nhất đã đảm bảo cho người chơi MAX (tối đa hóa).\n",
+        "- **beta:**\tGiá trị tốt nhất đã đảm bảo cho người chơi MIN (tối thiểu hóa).\n",
+        "- **isMaximizingTrue:** Nếu là lượt của người chơi MAX (X), False nếu là lượt của người chơi MIN (O).\n",
+        "\n",
+        "1. **Điều kiện dừng (Tính điểm tiện ích):**\n",
+        "- Nếu X thắng (Maximizer): Trả về 10 - depth. (Giá trị dương: tốt cho X. Trừ depth để ưu tiên thắng nhanh hơn).\n",
+        "- Nếu O thắng (Minimizer): Trả về -10 + depth. (Giá trị âm: tốt cho O. Cộng depth để ưu tiên thua chậm hơn).\n",
+        "- Nếu không còn ô trống trả về 0 (Hòa).\n",
+        "2. **Lượt Chơi Max:**\n",
+        "- Đặt giá trị tối đa tìm được ban đầu nhỏ.\n",
+        "- Lặp qua tất cả các nước đi hợp lệ.\n",
+        "- Gọi đệ quy cho lượt của người chơi MIN trên trạng thái bàn cờ mới.\n",
+        "- Chọn giá trị tối đa từ các nước đi có thể xảy ra.\n",
+        "- Cập nhật giá trị Alpha (giá trị tốt nhất mà MAX có thể đảm bảo).\n",
+        "- Nếu giá trị đảm bảo của MIN (beta) nhỏ hơn hoặc bằng giá trị đảm bảo của MAX (alpha), thì nhánh này không bao giờ được MIN chọn, nên ta cắt tỉa và dừng tìm kiếm nhánh này.\n",
+        "- Khôi phục trạng thái bàn cờ sau khi đánh giá xong một nhánh để không ảnh hưởng đến các lần lặp tiếp theo.\n",
+        "3. **Lượt Chơi Min:**\n",
+        "- Đặt giá trị tối thiểu tìm được ban đầu lớn.\n",
+        "- Lặp qua tất cả các nước đi hợp lệ.\n",
+        "- Gọi đệ quy cho lượt của người chơi MAX trên trạng thái bàn cờ mới.\n",
+        "- Chọn giá trị tối thiểu từ các nước đi có thể xảy ra.\n",
+        "- Cập nhật giá trị beta (giá trị tốt nhất mà MIN có thể đảm bảo).\n",
+        "- Nếu giá trị đảm bảo của MIN (beta) nhỏ hơn hoặc bằng giá trị đảm bảo của MAX (alpha), thì cắt tỉa.\n",
+        "- Khôi phục trạng thái bàn cờ."
+      ],
+      "metadata": {
+        "id": "dm3J59flJw22"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def FindBestMove(currentPosition, AI):\n",
+        "    \"\"\"\n",
+        "    Sử dụng minimax để tìm nước đi (chỉ số ô 1-9) tốt nhất cho AI.\n",
+        "    \"\"\"\n",
+        "    bestMove = -1\n",
+        "\n",
+        "    # AI là X (Maximizer)\n",
+        "    if AI == X:\n",
+        "        bestVal = -math.inf\n",
+        "        isMaximizing = False # Người chơi tiếp theo là MIN\n",
+        "\n",
+        "        for cell_num in GetAvailableCells(currentPosition):\n",
+        "            cell_index = cell_num - 1\n",
+        "\n",
+        "            # Đánh giá nước đi\n",
+        "            currentPosition[cell_index] = AI\n",
+        "            moveVal = minimax(currentPosition, 0, -math.inf, math.inf, isMaximizing)\n",
+        "            currentPosition[cell_index] = EMPTY_CELL_TOKEN # Hoàn tác\n",
+        "\n",
+        "            if moveVal > bestVal:\n",
+        "                bestVal = moveVal\n",
+        "                bestMove = cell_num\n",
+        "\n",
+        "    # AI là O (Minimizer)\n",
+        "    else:\n",
+        "        bestVal = math.inf\n",
+        "        isMaximizing = True # Người chơi tiếp theo là MAX\n",
+        "\n",
+        "        for cell_num in GetAvailableCells(currentPosition):\n",
+        "            cell_index = cell_num - 1\n",
+        "\n",
+        "            # Đánh giá nước đi\n",
+        "            currentPosition[cell_index] = AI\n",
+        "            moveVal = minimax(currentPosition, 0, -math.inf, math.inf, isMaximizing)\n",
+        "            currentPosition[cell_index] = EMPTY_CELL_TOKEN # Hoàn tác\n",
+        "\n",
+        "            if moveVal < bestVal:\n",
+        "                bestVal = moveVal\n",
+        "                bestMove = cell_num\n",
+        "\n",
+        "    return bestMove"
+      ],
+      "metadata": {
+        "id": "QPFY2pFaCcXb"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** Lựa chọn nước đi thực tế tối ưu nhất cho người chơi AI tại trạng thái bàn cờ hiện tại, dựa trên kết quả đánh giá điểm tiện ích (utility score) được tính toán bởi thuật toán Minimax.\n",
+        "1. **Áp dụng cho cả hai trường hợp**\n",
+        "- Duyệt qua từng ô trống (được trả về dưới dạng số ô 1-9) trên bàn cờ.\n",
+        "- Giả định AI thực hiện nước đi vào ô trống hiện tại.\n",
+        "- Gọi hàm minimax để tính toán giá trị tiện ích Minimax của trạng thái bàn cờ mới này. Độ sâu khởi đầu là 0.\n",
+        "- Khôi phục bàn cờ về trạng thái trước khi đánh giá để tiếp tục đánh giá các nước đi khác.\n",
+        "- Lưu lại nước đi cho ra giá trị tốt nhất tìm được cho đến thời điểm hiện tại.\n",
+        "2. **Trường hợp AI là X (Maximizer)**\n",
+        "- Khởi tạo: bestVal được đặt rất nhỏ vì AI (X) muốn tối đa hóa giá trị tiện ích (tìm kiếm giá trị +10).\n",
+        "- Tham số đệ quy: isMaximizing = False được truyền vào minimax. Điều này là chính xác vì sau khi AI (X) đi, người chơi tiếp theo là đối thủ (O), tức là người chơi Minimizing.\n",
+        "- AI chọn nước đi có giá trị moveVal lớn hơn giá trị tốt nhất hiện tại.\n",
+        "3. **Trường hợp AI là O (Minimizer)**\n",
+        "- Khởi tạo: bestVal được đặt rất lớn vì AI (O) muốn tối đa hóa giá trị tiện ích (tìm kiếm giá trị -10).\n",
+        "- Tham số đệ quy: isMaximizing = True được truyền vào minimax. Điều này là chính xác vì sau khi AI (O) đi, người chơi tiếp theo là đối thủ (O), tức là người chơi Maximizing.\n",
+        "- AI chọn nước đi có giá trị moveVal nhỏ hơn giá trị tốt nhất hiện tại."
+      ],
+      "metadata": {
+        "id": "xpfiUTG3MCPJ"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def main():\n",
+        "    # 1. Thiết lập trò chơi\n",
+        "    while True:\n",
+        "        player_char = input(\"Play as X or O? \").strip().upper()\n",
+        "        if player_char in [X, O]:\n",
+        "            break\n",
+        "        print(\"Invalid choice. Please enter 'X' or 'O'.\")\n",
+        "\n",
+        "    AI = O if player_char == X else X\n",
+        "\n",
+        "    currentGame = [EMPTY_CELL_TOKEN] * BOARD_SIZE\n",
+        "\n",
+        "    # X luôn bắt đầu trước\n",
+        "    currentTurn = X\n",
+        "\n",
+        "    print(f\"\\nYou are {player_char}, AI is {AI}. {X} starts first.\")\n",
+        "\n",
+        "    # 2. Vòng lặp trò chơi\n",
+        "    while True:\n",
+        "        # 2a. Xử lý lượt chơi\n",
+        "        if currentTurn == AI:\n",
+        "            print(\"\\nAI is making a move...\")\n",
+        "            # Sử dụng FindBestMove để tìm nước đi\n",
+        "            cell_num = FindBestMove(currentGame, AI)\n",
+        "            cell_index = cell_num - 1\n",
+        "            currentGame[cell_index] = AI\n",
+        "            currentTurn = player_char\n",
+        "\n",
+        "        elif currentTurn == player_char:\n",
+        "            PrintBoard(currentGame)\n",
+        "            while True:\n",
+        "                try:\n",
+        "                    humanInput = int(input(\"Enter cell number (1-9): \").strip())\n",
+        "                    cell_index = humanInput - 1\n",
+        "\n",
+        "                    if 1 <= humanInput <= BOARD_SIZE and currentGame[cell_index] == EMPTY_CELL_TOKEN:\n",
+        "                        currentGame[cell_index] = player_char\n",
+        "                        currentTurn = AI\n",
+        "                        break\n",
+        "                    else:\n",
+        "                        print(\"Invalid move. Cell not available or input out of range (1-9).\")\n",
+        "                except ValueError:\n",
+        "                    print(\"Invalid input. Please enter a number.\")\n",
+        "\n",
+        "        # 2b. Kiểm tra kết thúc trò chơi\n",
+        "        winner = GetWinner(currentGame)\n",
+        "        if winner != None:\n",
+        "            PrintBoard(currentGame)\n",
+        "            print(f\"\\n--- GAME OVER: {winner} WON!!! ---\")\n",
+        "            break\n",
+        "\n",
+        "        if len(GetAvailableCells(currentGame)) == 0:\n",
+        "            PrintBoard(currentGame)\n",
+        "            print(\"\\n--- GAME OVER: Tie. ---\")\n",
+        "            break"
+      ],
+      "metadata": {
+        "id": "ChBtjAvwE9fx"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "**Mục đích:** Khởi tạo và chạy vòng lặp trò chơi cho đến khi đạt được trạng thái kết thúc (thắng, thua, hoặc hòa).\n",
+        "\n",
+        "### Thiết lập trò chơi\n",
+        "1. Chọn vai trò (X hoặc O) và gán vai trò còn lại cho AI.\n",
+        "2. Tạo bàn cờ trống ban đầu (danh sách 9 phần tử).\n",
+        "3. Đặt người chơi X luôn là người đi trước.\n",
+        "4. Thông báo cho người dùng biết vai trò của họ và ai bắt đầu.\n",
+        "### Vòng lặp chính\n",
+        "1. Gọi hàm FindBestMove(currentGame, AI) để nhận nước đi tối ưu (sử dụng Minimax), cập nhật bàn cờ và chuyển lượt cho người chơi.\n",
+        "2. Người dùng gọi PrintBoard(currentGame) để hiển thị trạng thái hiện tại.\n",
+        "3. Vòng lặp while True: bên trong yêu cầu người dùng nhập số ô (1-9).\n",
+        "4. Kiểm tra xem ô đó có hợp lệ không (trong phạm vi 1-9 và còn trống).\n",
+        "5. Nếu hợp lệ, cập nhật bàn cờ và chuyển lượt cho AI; nếu không, thông báo lỗi và yêu cầu nhập lại.\n",
+        "6. Sau mỗi nước đi (của AI hoặc người dùng), chương trình kiểm tra hai điều kiện dừng:\n",
+        "- **Kiểm tra thắng thua:** Nếu winner != None, chương trình in bàn cờ, thông báo người chiến thắng và thoát vòng lặp (break).\n",
+        "- **Kiểm tra hòa:** Nếu không còn ô trống nào (và chưa có người thắng), chương trình in bàn cờ, thông báo Hòa (Tie.) và thoát vòng lặp (break)."
+      ],
+      "metadata": {
+        "id": "VL9NAyDIN2xY"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Chạy toàn bộ chương trình\n",
+        "if __name__ == \"__main__\":\n",
+        "    main()"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "_GyN0ugTFDlT",
+        "outputId": "1bffdb41-a464-4742-da22-2ce37e575a6c"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Play as X or O? O\n",
+            "\n",
+            "You are O, AI is X. X starts first.\n",
+            "\n",
+            "AI is making a move...\n",
+            "\n",
+            "    X| | \n",
+            "    -+-+-\n",
+            "     | | \n",
+            "    -+-+-\n",
+            "     | | \n",
+            "    \n",
+            "Enter cell number (1-9): 5\n",
+            "\n",
+            "AI is making a move...\n",
+            "\n",
+            "    X|X| \n",
+            "    -+-+-\n",
+            "     |O| \n",
+            "    -+-+-\n",
+            "     | | \n",
+            "    \n",
+            "Enter cell number (1-9): 3\n",
+            "\n",
+            "AI is making a move...\n",
+            "\n",
+            "    X|X|O\n",
+            "    -+-+-\n",
+            "     |O| \n",
+            "    -+-+-\n",
+            "    X| | \n",
+            "    \n",
+            "Enter cell number (1-9): 4\n",
+            "\n",
+            "AI is making a move...\n",
+            "\n",
+            "    X|X|O\n",
+            "    -+-+-\n",
+            "    O|O|X\n",
+            "    -+-+-\n",
+            "    X| | \n",
+            "    \n",
+            "Enter cell number (1-9): 8\n",
+            "\n",
+            "AI is making a move...\n",
+            "\n",
+            "    X|X|O\n",
+            "    -+-+-\n",
+            "    O|O|X\n",
+            "    -+-+-\n",
+            "    X|O|X\n",
+            "    \n",
+            "\n",
+            "--- GAME OVER: Tie. ---\n"
+          ]
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "display_name": "Python 3",
+      "name": "python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 0
+}
